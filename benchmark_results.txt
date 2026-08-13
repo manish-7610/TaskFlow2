@@ -1,0 +1,18 @@
+Benchmark Results
+========================================
++---------------------+---------------+
+| Algorithm           | Comparisons   |
++---------------------+---------------+
+| Sorting    10 tasks |           20   |
+| Sorting   500 tasks |        44474   |
+| Sorting  3000 tasks |      1503805   |
+| Binary search       |           10   |
+| Linear search       |          608   |
++---------------------+---------------+
+
+Detailed:
+Sorting 10 tasks: 20 comparisons
+Sorting 500 tasks: 44474 comparisons
+Sorting 3000 tasks: 1503805 comparisons
+Binary search for 'fqqdMsTwnomKGTW': index=607, comparisons=10
+Linear search for 'fqqdMsTwnomKGTW': index=607, comparisons=608

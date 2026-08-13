@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow2 – Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="login.css" />
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div id="loader" class="loader-overlay" style="display:none;">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Auth Card -->
+  <div class="auth-container">
+    <div class="auth-card">
+
+      <!-- Brand -->
+      <div class="auth-brand">
+        <div class="auth-brand-icon">
+          <i class="fas fa-tasks"></i>
+        </div>
+        <div class="auth-brand-text">
+          <h1>TaskFlow2</h1>
+          <p>AI-Assisted Task Management</p>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" type="button">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+        <button class="auth-tab" id="tab-register" type="button">
+          <i class="fas fa-user-plus"></i> Register
+        </button>
+      </div>
+
+      <!-- Login Form -->
+      <form class="auth-form" id="login-form" novalidate>
+
+        <div id="login-error" class="auth-error" role="alert">
+          <i class="fas fa-exclamation-circle"></i>
+          <span id="login-error-msg">Invalid credentials.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="login-email">Email address</label>
+          <div class="input-wrapper">
+            <input
+              type="email"
+              id="login-email"
+              placeholder="you@example.com"
+              autocomplete="email"
+              required
+            />
+            <i class="fas fa-envelope"></i>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <div class="input-wrapper">
+            <input
+              type="password"
+              id="login-password"
+              placeholder="Your password"
+              autocomplete="current-password"
+              class="has-toggle"
+              required
+            />
+            <i class="fas fa-lock"></i>
+            <button type="button" class="toggle-password" aria-label="Toggle password visibility" tabindex="-1">
+              <i class="fas fa-eye" id="login-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-auth" id="login-submit">
+          <div class="spinner-sm"></div>
+          <span class="btn-text"><i class="fas fa-sign-in-alt"></i> Sign In</span>
+        </button>
+
+      </form>
+
+      <!-- Register Form -->
+      <form class="auth-form hidden" id="register-form" novalidate>
+
+        <div id="register-error" class="auth-error" role="alert">
+          <i class="fas fa-exclamation-circle"></i>
+          <span id="register-error-msg">Registration failed.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-name">Full name</label>
+          <div class="input-wrapper">
+            <input
+              type="text"
+              id="reg-name"
+              placeholder="Alice Smith"
+              autocomplete="name"
+              required
+            />
+            <i class="fas fa-user"></i>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-email">Email address</label>
+          <div class="input-wrapper">
+            <input
+              type="email"
+              id="reg-email"
+              placeholder="you@example.com"
+              autocomplete="email"
+              required
+            />
+            <i class="fas fa-envelope"></i>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-password">Password <span style="color:rgba(255,255,255,0.3);font-size:0.75rem;">(min 8 characters)</span></label>
+          <div class="input-wrapper">
+            <input
+              type="password"
+              id="reg-password"
+              placeholder="Create a password"
+              autocomplete="new-password"
+              class="has-toggle"
+              required
+              minlength="8"
+            />
+            <i class="fas fa-lock"></i>
+            <button type="button" class="toggle-password" aria-label="Toggle password visibility" tabindex="-1">
+              <i class="fas fa-eye" id="reg-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-auth" id="register-submit">
+          <div class="spinner-sm"></div>
+          <span class="btn-text"><i class="fas fa-user-plus"></i> Create Account</span>
+        </button>
+
+      </form>
+
+      <!-- Footer note -->
+      <p class="auth-footer-note">
+        Secure · Encrypted · Built with FastAPI
+      </p>
+
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    'use strict';
+
+    // ── If already logged in, skip login page ──────────────────────────────
+    if (Auth.isLoggedIn()) {
+      window.location.href = 'index.html';
+    }
+
+    const API_BASE = Config.getApiBase();
+
+    // ── DOM refs ───────────────────────────────────────────────────────────
+    const loader        = document.getElementById('loader');
+    const toastContainer = document.getElementById('toast-container');
+
+    const tabLogin      = document.getElementById('tab-login');
+    const tabRegister   = document.getElementById('tab-register');
+    const loginForm     = document.getElementById('login-form');
+    const registerForm  = document.getElementById('register-form');
+
+    const loginError    = document.getElementById('login-error');
+    const loginErrorMsg = document.getElementById('login-error-msg');
+    const regError      = document.getElementById('register-error');
+    const regErrorMsg   = document.getElementById('register-error-msg');
+
+    const loginSubmit   = document.getElementById('login-submit');
+    const regSubmit     = document.getElementById('register-submit');
+
+    // ── Utilities ──────────────────────────────────────────────────────────
+    function showLoader()  { loader.style.display = 'flex'; }
+    function hideLoader()  { loader.style.display = 'none'; }
+
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+      toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i> ${message}`;
+      toastContainer.appendChild(toast);
+      setTimeout(() => {
+        toast.style.transition = 'opacity 0.3s';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function setLoading(btn, loading) {
+      btn.disabled = loading;
+      btn.classList.toggle('loading', loading);
+    }
+
+    function showError(el, msgEl, text) {
+      msgEl.textContent = text;
+      el.classList.add('show');
+    }
+
+    function hideError(el) {
+      el.classList.remove('show');
+    }
+
+    // ── Tab switching ──────────────────────────────────────────────────────
+    function switchTab(active) {
+      if (active === 'login') {
+        tabLogin.classList.add('active');
+        tabRegister.classList.remove('active');
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        // Re-trigger animation
+        loginForm.style.animation = 'none';
+        requestAnimationFrame(() => { loginForm.style.animation = ''; });
+      } else {
+        tabRegister.classList.add('active');
+        tabLogin.classList.remove('active');
+        registerForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+        registerForm.style.animation = 'none';
+        requestAnimationFrame(() => { registerForm.style.animation = ''; });
+      }
+    }
+
+    tabLogin.addEventListener('click', () => switchTab('login'));
+    tabRegister.addEventListener('click', () => switchTab('register'));
+
+    // ── Password toggle ────────────────────────────────────────────────────
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const input = btn.parentElement.querySelector('input');
+        const icon  = btn.querySelector('i');
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+          input.type = 'password';
+          icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+      });
+    });
+
+    // ── Login ──────────────────────────────────────────────────────────────
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError(loginError);
+
+      const email    = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      if (!email || !password) {
+        showError(loginError, loginErrorMsg, 'Please fill in all fields.');
+        return;
+      }
+
+      setLoading(loginSubmit, true);
+
+      try {
+        // OAuth2 password flow – must be form-encoded
+        const body = new URLSearchParams();
+        body.append('username', email);
+        body.append('password', password);
+
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body.toString(),
+        });
+
+        if (!res.ok) {
+          let detail = 'Incorrect email or password.';
+          try {
+            const data = await res.json();
+            detail = data.detail || detail;
+          } catch (_) {}
+          showError(loginError, loginErrorMsg, detail);
+          return;
+        }
+
+        const data = await res.json();
+        Auth.setToken(data.access_token);
+
+        // Fetch and cache user profile
+        const meRes = await fetch(`${API_BASE}/auth/me`, {
+          headers: { 'Authorization': `Bearer ${data.access_token}` },
+        });
+        if (meRes.ok) {
+          const user = await meRes.json();
+          Auth.setUser(user);
+        }
+
+        showToast('Welcome back!', 'success');
+        setTimeout(() => { window.location.href = 'index.html'; }, 600);
+
+      } catch (err) {
+        showError(loginError, loginErrorMsg, 'Connection failed. Is the server running?');
+        console.error(err);
+      } finally {
+        setLoading(loginSubmit, false);
+      }
+    });
+
+    // ── Register ───────────────────────────────────────────────────────────
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError(regError);
+
+      const fullName = document.getElementById('reg-name').value.trim();
+      const email    = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+
+      if (!fullName || !email || !password) {
+        showError(regError, regErrorMsg, 'Please fill in all fields.');
+        return;
+      }
+      if (password.length < 8) {
+        showError(regError, regErrorMsg, 'Password must be at least 8 characters.');
+        return;
+      }
+
+      setLoading(regSubmit, true);
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ full_name: fullName, email, password }),
+        });
+
+        if (!res.ok) {
+          let detail = 'Registration failed.';
+          try {
+            const data = await res.json();
+            detail = data.detail || detail;
+          } catch (_) {}
+          showError(regError, regErrorMsg, detail);
+          return;
+        }
+
+        const data = await res.json();
+        Auth.setToken(data.access_token);
+
+        // Fetch and cache user profile
+        const meRes = await fetch(`${API_BASE}/auth/me`, {
+          headers: { 'Authorization': `Bearer ${data.access_token}` },
+        });
+        if (meRes.ok) {
+          const user = await meRes.json();
+          Auth.setUser(user);
+        }
+
+        showToast('Account created! Redirecting…', 'success');
+        setTimeout(() => { window.location.href = 'index.html'; }, 700);
+
+      } catch (err) {
+        showError(regError, regErrorMsg, 'Connection failed. Is the server running?');
+        console.error(err);
+      } finally {
+        setLoading(regSubmit, false);
+      }
+    });
+
+    // ── Auto-focus first field ─────────────────────────────────────────────
+    document.getElementById('login-email').focus();
+  </script>
+</body>
+</html>

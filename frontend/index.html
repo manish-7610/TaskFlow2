@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow2 – AI Task Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div id="loader" class="loader-overlay" style="display:none;">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <div class="app-container">
+
+    <!-- ═══════════════════════════ SIDEBAR ═══════════════════════════ -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <i class="fas fa-tasks"></i>
+        <span class="nav-label">TaskFlow2</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <ul>
+          <li data-section="dashboard" class="active">
+            <a><i class="fas fa-home"></i><span class="nav-label"> Dashboard</span></a>
+          </li>
+          <li data-section="tasks">
+            <a><i class="fas fa-list-ul"></i><span class="nav-label"> Tasks</span></a>
+          </li>
+          <li data-section="projects">
+            <a><i class="fas fa-project-diagram"></i><span class="nav-label"> Projects</span></a>
+          </li>
+
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" id="sidebar-logout" title="Sign out">
+          <i class="fas fa-sign-out-alt"></i>
+          <span class="nav-label">Sign Out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ═══════════════════════════ MAIN ═══════════════════════════ -->
+    <main class="main-content">
+
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <h1 id="page-title">Dashboard</h1>
+        </div>
+        <div class="header-right">
+          <span class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span id="current-user-name">Loading…</span>
+            <button class="header-logout" id="header-logout" title="Sign out">
+              <i class="fas fa-sign-out-alt"></i> Sign Out
+            </button>
+          </span>
+        </div>
+      </header>
+
+      <!-- ─────────────────── SECTION: DASHBOARD ─────────────────── -->
+      <section id="section-dashboard" class="page-section">
+
+        <section class="stats-grid" id="stats-grid">
+          <div class="stat-card" id="stat-total">
+            <div class="stat-icon"><i class="fas fa-tasks"></i></div>
+            <div class="stat-content"><h3>Total Tasks</h3><p class="stat-number">—</p></div>
+          </div>
+          <div class="stat-card" id="stat-high">
+            <div class="stat-icon"><i class="fas fa-arrow-up" style="color:#e74c3c"></i></div>
+            <div class="stat-content"><h3>High Priority</h3><p class="stat-number">—</p></div>
+          </div>
+          <div class="stat-card" id="stat-medium">
+            <div class="stat-icon"><i class="fas fa-minus" style="color:#f39c12"></i></div>
+            <div class="stat-content"><h3>Medium Priority</h3><p class="stat-number">—</p></div>
+          </div>
+          <div class="stat-card" id="stat-low">
+            <div class="stat-icon"><i class="fas fa-arrow-down" style="color:#2ecc71"></i></div>
+            <div class="stat-content"><h3>Low Priority</h3><p class="stat-number">—</p></div>
+          </div>
+          <div class="stat-card" id="stat-projects">
+            <div class="stat-icon"><i class="fas fa-project-diagram"></i></div>
+            <div class="stat-content"><h3>Projects</h3><p class="stat-number">—</p></div>
+          </div>
+          <div class="stat-card" id="stat-todo">
+            <div class="stat-icon"><i class="fas fa-circle" style="color:#74b9ff"></i></div>
+            <div class="stat-content"><h3>To Do</h3><p class="stat-number">—</p></div>
+          </div>
+          <div class="stat-card" id="stat-inprogress">
+            <div class="stat-icon"><i class="fas fa-spinner" style="color:#fdcb6e"></i></div>
+            <div class="stat-content"><h3>In Progress</h3><p class="stat-number">—</p></div>
+          </div>
+          <div class="stat-card" id="stat-completed">
+            <div class="stat-icon"><i class="fas fa-check-circle" style="color:#00b894"></i></div>
+            <div class="stat-content"><h3>Completed</h3><p class="stat-number">—</p></div>
+          </div>
+
+        </section>
+
+        <!-- Recent tasks preview on dashboard -->
+        <div class="card">
+          <h2><i class="fas fa-clock"></i> Recent Tasks</h2>
+          <div id="recent-task-list">
+            <div class="empty-message">
+              <i class="fas fa-inbox"></i>
+              <p>No tasks yet</p>
+              <small>Go to Tasks to create your first task</small>
+            </div>
+          </div>
+        </div>
+
+      </section><!-- /dashboard -->
+
+      <!-- ─────────────────── SECTION: TASKS ─────────────────── -->
+      <section id="section-tasks" class="page-section hidden">
+
+        <div class="action-row">
+          <!-- Create Task Form -->
+          <section class="card form-card">
+            <h2><i class="fas fa-plus-circle"></i> Create Task</h2>
+            <form id="task-form" novalidate>
+              <div class="form-group">
+                <label for="task-title">Title</label>
+                <input type="text" id="task-title" placeholder="Task title" required />
+              </div>
+              <div class="form-group">
+                <label for="task-desc">Description</label>
+                <textarea id="task-desc" placeholder="Description (optional)"></textarea>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="task-priority">Priority</label>
+                  <select id="task-priority">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="task-due">Due Date</label>
+                  <input type="text" id="task-due" placeholder="e.g., 2026-12-01" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="task-project">Project</label>
+                <select id="task-project" required>
+                  <option value="">Select Project</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Create Task
+              </button>
+            </form>
+          </section>
+
+          <!-- AI Quick Add -->
+          <section class="card ai-card">
+            <h2><i class="fas fa-robot"></i> AI Quick Add</h2>
+            <form id="quick-add-form" novalidate>
+              <div class="form-group">
+                <label for="quick-text">Describe your task</label>
+                <textarea id="quick-text" placeholder="e.g., Urgent: Fix login bug by tomorrow" rows="3"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="quick-project">Project</label>
+                <select id="quick-project" required>
+                  <option value="">Select Project</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-ai">
+                <i class="fas fa-magic"></i> Generate Task
+              </button>
+            </form>
+          </section>
+        </div>
+
+        <!-- Search & Sort -->
+        <div class="control-row">
+          <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search tasks by exact title…" />
+            <select id="search-algo">
+              <option value="binary">Binary Search</option>
+              <option value="linear">Linear Search</option>
+            </select>
+            <button id="search-btn" class="btn btn-secondary">
+              <i class="fas fa-search"></i> Search
+            </button>
+            <button id="clear-search-btn" class="btn btn-secondary" style="display:none;">
+              <i class="fas fa-times"></i> Clear
+            </button>
+          </div>
+          <div class="sort-box">
+            <button id="sort-btn" class="btn btn-secondary">
+              <i class="fas fa-sort-amount-up"></i> Sort by Priority
+            </button>
+            <button id="reset-sort-btn" class="btn btn-secondary" style="display:none;">
+              <i class="fas fa-undo"></i> Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Task List -->
+        <section class="card task-list-container">
+          <h2><i class="fas fa-list-ul"></i> Task List <span id="task-count-badge" style="font-size:0.75rem;color:rgba(255,255,255,0.35);font-weight:400;margin-left:4px;"></span></h2>
+          <div id="task-list">
+            <div class="empty-message">
+              <i class="fas fa-inbox"></i>
+              <p>No tasks yet</p>
+              <small>Use the form above to create your first task</small>
+            </div>
+          </div>
+        </section>
+
+      </section><!-- /tasks -->
+
+      <!-- ─────────────────── SECTION: PROJECTS ─────────────────── -->
+      <section id="section-projects" class="page-section hidden">
+
+        <!-- Create Project -->
+        <div class="card" style="max-width:560px;">
+          <h2><i class="fas fa-plus-circle"></i> New Project</h2>
+          <form id="project-form" novalidate>
+            <div class="form-group">
+              <label for="project-name">Project Name</label>
+              <input type="text" id="project-name" placeholder="e.g., Website Redesign" required />
+            </div>
+            <div class="form-group">
+              <label for="project-desc">Description <span style="color:rgba(255,255,255,0.3);font-size:0.75rem;">(optional)</span></label>
+              <textarea id="project-desc" placeholder="What is this project about?" rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> Create Project
+            </button>
+          </form>
+        </div>
+
+        <!-- Project List -->
+        <div class="section-header">
+          <h2><i class="fas fa-project-diagram"></i> Your Projects <span id="projects-count-badge" style="font-size:0.75rem;color:rgba(255,255,255,0.35);font-weight:400;margin-left:4px;"></span></h2>
+        </div>
+        <div class="projects-grid" id="project-list">
+          <div class="empty-message">
+            <i class="fas fa-folder-open"></i>
+            <p>No projects yet</p>
+            <small>Create your first project above</small>
+          </div>
+        </div>
+
+      </section><!-- /projects -->
+
+
+      <!-- Footer -->
+      <footer class="footer">
+        <p>&copy; <span id="footer-year"></span> TaskFlow2 – AI Assisted Task Management</p>
+      </footer>
+
+    </main><!-- /main-content -->
+  </div><!-- /app-container -->
+
+  <!-- ═══════════════════ EDIT TASK MODAL ═══════════════════ -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" id="modal-close-btn">&times;</span>
+      <h2><i class="fas fa-edit" style="color:#6c5ce7;margin-right:10px;"></i>Edit Task</h2>
+      <form id="edit-form" novalidate>
+        <input type="hidden" id="edit-id" />
+        <div class="form-group">
+          <label for="edit-title">Title</label>
+          <input type="text" id="edit-title" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-desc">Description</label>
+          <textarea id="edit-desc"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-priority">Priority</label>
+            <select id="edit-priority">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-due">Due Date</label>
+            <input type="text" id="edit-due" placeholder="e.g., 2026-12-01" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="edit-project">Project</label>
+          <select id="edit-project" required>
+            <option value="">Select Project</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-status">Status</label>
+          <select id="edit-status">
+            <option value="todo">To Do</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Update Task
+          </button>
+          <button type="button" id="improve-btn" class="btn btn-improve">
+            <i class="fas fa-magic"></i> Improve with AI
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
