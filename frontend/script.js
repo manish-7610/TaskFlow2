@@ -292,7 +292,7 @@ function populateProjectDropdowns() {
 
 async function loadProjects() {
   try {
-    const projects = await fetchAPI('/projects');
+    const projects = await fetchAPI('/projects/');
     currentProjects = projects;
     saveToCache('projects', projects);
     populateProjectDropdowns();
@@ -449,7 +449,7 @@ function renderRecentTasks(tasks) {
 
 async function loadTasks() {
   try {
-    const tasks = await fetchAPI('/tasks');
+    const tasks = await fetchAPI('/tasks/');
     currentTasks = tasks;
     saveToCache('tasks', tasks);
     renderTasks(tasks);
@@ -482,7 +482,7 @@ async function createTask(event) {
 
   showLoader();
   try {
-    await fetchAPI('/tasks', { method: 'POST', body: JSON.stringify(data) });
+    await fetchAPI('/tasks/', { method: 'POST', body: JSON.stringify(data) });
     showToast('Task created!', 'success');
     taskForm.reset();
     isSorted = false;
@@ -671,7 +671,7 @@ searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchTask
 async function sortTasks() {
   showLoader();
   try {
-    const tasks = await fetchAPI('/tasks?sort=priority');
+    const tasks = await fetchAPI('/tasks/?sort=priority');
     currentTasks = tasks;
     renderTasks(tasks);
     isSorted = true;
@@ -688,7 +688,7 @@ async function sortTasks() {
 async function resetSort() {
   showLoader();
   try {
-    const tasks = await fetchAPI('/tasks');
+    const tasks = await fetchAPI('/tasks/');
     currentTasks = tasks;
     renderTasks(tasks);
     isSorted = false;
@@ -742,7 +742,7 @@ async function createProject(event) {
 
   showLoader();
   try {
-    await fetchAPI('/projects', {
+    await fetchAPI('/projects/', {
       method: 'POST',
       body: JSON.stringify({
         name,
