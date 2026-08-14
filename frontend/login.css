@@ -233,7 +233,8 @@ body::after {
 .input-wrapper {
   position: relative;
 }
-.input-wrapper i {
+/* Left-side decorative icon (direct child only, NOT the eye inside the toggle button) */
+.input-wrapper > i {
   position: absolute;
   left: 14px;
   top: 50%;
@@ -262,7 +263,7 @@ body::after {
 }
 .input-wrapper input:focus + i,
 .input-wrapper input:focus ~ i,
-.input-wrapper:focus-within i {
+.input-wrapper:focus-within > i {
   color: #a29bfe;
 }
 .input-wrapper input::placeholder {
@@ -293,12 +294,16 @@ body::after {
 .input-wrapper .toggle-password:hover {
   color: rgba(255, 255, 255, 0.7);
 }
-/* The <i> INSIDE the toggle button must also receive pointer events
-   (overrides the blanket .input-wrapper i { pointer-events: none } rule) */
+/* The <i> INSIDE the toggle button: reset any inherited absolute positioning
+   and prevent pointer events from swallowing clicks before the button gets them */
 .input-wrapper .toggle-password i {
-  pointer-events: none;  /* let the button handle the click, not the icon */
+  position: static;
+  transform: none;
+  left: auto;
+  top: auto;
+  pointer-events: none;
 }
-/* Adjust padding when toggle button present */
+/* Adjust right padding when toggle button is present so text doesn't overlap it */
 .input-wrapper input.has-toggle {
   padding-right: 44px;
 }

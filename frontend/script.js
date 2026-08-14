@@ -621,17 +621,12 @@ async function searchTask() {
     );
 
     if (result) {
-      // Highlight the found item in the list
-      const found = document.getElementById(`task-${result.id}`);
-      if (found) {
-        found.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        found.classList.add('task-highlight');
-        setTimeout(() => found.classList.remove('task-highlight'), 2500);
-        showToast(`Found: "${result.title}"`, 'success');
-      } else {
-        // Task exists in DB but may not be in current view (e.g. sorted/filtered)
-        showToast(`Found: "${result.title}" (ID ${result.id}). Reloading list…`, 'info');
-        await loadTasks();
+      // Find the full task object from the local cache so we can render it
+      const fullTask = currentTasks.find(t => t.id === result.id);
+      if (fullTask) {
+        // Filter the task list to show ONLY the matching task
+        renderTasks([fullTask]);
+        // Highlight and scroll to it after render
         setTimeout(() => {
           const el = document.getElementById(`task-${result.id}`);
           if (el) {
@@ -639,15 +634,34 @@ async function searchTask() {
             el.classList.add('task-highlight');
             setTimeout(() => el.classList.remove('task-highlight'), 2500);
           }
-        }, 300);
+        }, 50);
+      } else {
+        // Task found in DB but not in local cache – reload then filter
+        await loadTasks();
+        const freshTask = currentTasks.find(t => t.id === result.id);
+        if (freshTask) {
+          renderTasks([freshTask]);
+          setTimeout(() => {
+            const el = document.getElementById(`task-${result.id}`);
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              el.classList.add('task-highlight');
+              setTimeout(() => el.classList.remove('task-highlight'), 2500);
+            }
+          }, 50);
+        }
       }
+      showToast(`Found: "${result.title}"`, 'success');
       clearSearchBtn.style.display = '';
     }
   } catch (e) {
     // The backend returns "Task not found" (not a raw "404") as the detail string
     const msg = e.message || '';
     if (msg.includes('Task not found') || msg.includes('No tasks found') || msg.includes('404')) {
+      // No match – show empty state so the list is not left showing all tasks
+      renderTasks([]);
       showToast('No task found with that exact title', 'error');
+      clearSearchBtn.style.display = '';
     } else {
       showToast(`Search error: ${msg}`, 'error');
     }
@@ -659,6 +673,9 @@ async function searchTask() {
 clearSearchBtn.addEventListener('click', () => {
   searchInput.value = '';
   clearSearchBtn.style.display = 'none';
+  isSorted = false;
+  resetSortBtn.style.display = 'none';
+  sortBtn.style.display = '';
   renderTasks(currentTasks);
 });
 
